@@ -1,0 +1,119 @@
+# ==============================================================================
+# SoftTech Solutions - HelpDesk Reactive Microservice Infrastructure
+# Stack: MongoDB 7.0 (Replica Set), Redis 7.2 (Alpine), Apache Kafka (KRaft), Kafka UI
+# Architecture: Reactive Event-Driven Microservices (Strangler Fig Pattern)
+# ==============================================================================
+version: '3.8'
+
+networks:
+  helpdesk-network:
+    driver: bridge
+    name: helpdesk-network
+
+volumes:
+  mongo_data:
+    name: helpdesk_mongo_data
+  redis_data:
+    name: helpdesk_redis_data
+  kafka_data:
+    name: helpdesk_kafka_data
+
+services:
+  # ----------------------------------------------------------------------------
+  # Primary Persistence: MongoDB (NoSQL Document Store)
+  # Configured for Reactive Panache with change streams and transactional support
+  # ----------------------------------------------------------------------------
+  mongodb:
+    image: mongo:7.0
+    container_name: helpdesk-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: helpdesk_admin
+      MONGO_INITDB_ROOT_PASSWORD: helpdesk_secret_password
+      MONGO_INITDB_DATABASE: helpdesk_db
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - helpdesk-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ----------------------------------------------------------------------------
+  # High-Speed Distributed Cache: Redis (Cache-Aside Pattern)
+  # Low-latency SLA verification and query acceleration (<200ms target)
+  # ----------------------------------------------------------------------------
+  redis:
+    image: redis:7.2-alpine
+    container_name: helpdesk-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "redis_secret_password"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - helpdesk-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis_secret_password", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ----------------------------------------------------------------------------
+  # Distributed Messaging Broker: Apache Kafka (KRaft Mode - No ZooKeeper)
+  # Event-Driven Architecture: Domain events and asynchronous audit logs
+  # ----------------------------------------------------------------------------
+  kafka:
+    image: bashj79/kafka-kraft:latest
+    container_name: helpdesk-kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:9092,EXTERNAL://localhost:9094'
+      KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_LOG_RETENTION_HOURS: 168
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - helpdesk-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+  # ----------------------------------------------------------------------------
+  # Observability & Developer Experience: Kafka UI (Provectus)
+  # Visual inspection for topics, partitions, consumer lag, and event payloads
+  # ----------------------------------------------------------------------------
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: helpdesk-kafka-ui
+    restart: unless-stopped
+    ports:
+      - "8088:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: helpdesk-local-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - helpdesk-network
