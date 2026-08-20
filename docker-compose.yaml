@@ -3,8 +3,6 @@
 # Stack: MongoDB 7.0 (Replica Set), Redis 7.2 (Alpine), Apache Kafka (KRaft), Kafka UI
 # Architecture: Reactive Event-Driven Microservices (Strangler Fig Pattern)
 # ==============================================================================
-version: '3.8'
-
 networks:
   helpdesk-network:
     driver: bridge
@@ -28,7 +26,7 @@ services:
     container_name: helpdesk-mongodb
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "27018:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: helpdesk_admin
       MONGO_INITDB_ROOT_PASSWORD: helpdesk_secret_password
@@ -53,14 +51,14 @@ services:
     container_name: helpdesk-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6380:6379"
     command: ["redis-server", "--appendonly", "yes", "--requirepass", "redis_secret_password"]
     volumes:
       - redis_data:/data
     networks:
       - helpdesk-network
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "redis_secret_password", "ping"]
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "redis_secret_password", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -75,13 +73,13 @@ services:
     container_name: helpdesk-kafka
     restart: unless-stopped
     ports:
-      - "9092:9092"
-      - "9094:9094"
+      - "9093:9092"
+      - "9095:9094"
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
-      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:9092,EXTERNAL://localhost:9094'
-      KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:9092,EXTERNAL://localhost:9095'
+      KAFKA_LISTENERS: 'CONTROLLER://0.0.0.0:9093,INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:9094'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'INTERNAL'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
@@ -93,7 +91,7 @@ services:
     networks:
       - helpdesk-network
     healthcheck:
-      test: ["CMD-SHELL", "kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 5
