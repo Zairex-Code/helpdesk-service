@@ -1,10 +1,6 @@
 package org.softtech.domain.event;
 
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
 import org.softtech.domain.model.ErpModule;
 import org.softtech.domain.model.Priority;
 import org.softtech.domain.model.Ticket;
@@ -13,45 +9,74 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-
 /**
- * Domain Event emitted immediately after a new Ticket aggregate root is created and verified.
+ * Immutable Domain Event emitted immediately after a new {@link Ticket} aggregate root is created.
+ * <p>
+ * Implemented as a native Java Record to guarantee shallow immutability and transparent
+ * data carrier semantics. In compliance with ISO/IEC 25010 Reliability (Data Integrity) and
+ * CMMI Level 2/3 Service Operations, this record provides canonical serialization for Kafka topics.
+ * </p>
  *
- * This immutable event serves as the single source of truth for downstream event-driven workflows,
- * including Kafka event streaming, notification dispatching, cache pre-warming, and SLA tracking engines.
- * In accordance with ISO/IEC 25010 Reliability (State Integrity) and CMMI Level 2/3 Service Operations,
- * this record represents an immutable historical fact that cannot be retracted or altered.
+ * @param eventId the unique event identifier for consumer idempotency
+ * @param eventType the versioned schema contract identifier
+ * @param ticketId the unique persistence identifier of the ticket
+ * @param ticketNumber the business-readable tracking sequence (e.g., "TICK-2026-0001")
+ * @param title the concise summary of the reported incident
+ * @param priority the operational urgency and severity level
+ * @param erpModule the affected ERP functional module
+ * @param requesterId the identifier of the reporting user or corporate tenant
+ * @param vipCustomer indicates whether the requester holds high-priority SLA coverage
+ * @param responseDeadline the calculated SLA deadline for initial response
+ * @param resolutionDeadline the calculated SLA deadline for final ticket resolution
+ * @param occurredOn the exact UTC instant when the event occurred
+ *
+ * @author SoftTech Architecture Team
+ * @version 1.0.0
  */
-@Getter
 @Builder(toBuilder = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public final class TicketCreatedEvent {
+public record TicketCreatedEvent(
+        String eventId,
+        String eventType,
+        String ticketId,
+        String ticketNumber,
+        String title,
+        Priority priority,
+        ErpModule erpModule,
+        String requesterId,
+        boolean vipCustomer,
+        Instant responseDeadline,
+        Instant resolutionDeadline,
+        Instant occurredOn) {
 
     public static final String EVENT_TYPE = "HELP_DESK_TICKET_CREATED_V1";
 
-    private final String eventId;
-    private final String eventType;
-    private final String ticketId;
-    private final String ticketNumber;
-    private final String title;
-    private final Priority priority;
-    private final ErpModule erpModule;
-    private final boolean vipCustomer;
-    private final Instant responseDeadline;
-    private final Instant resolutionDeadline;
-    private final Instant occurredOn;
-
+    /**
+     * Compact constructor enforcing strict non-null invariant checks across all required fields.
+     */
+    public TicketCreatedEvent {
+        Objects.requireNonNull(eventId, "Event ID must not be null");
+        Objects.requireNonNull(eventType, "Event type must not be null");
+        Objects.requireNonNull(ticketId, "Ticket ID must not be null");
+        Objects.requireNonNull(ticketNumber, "Ticket number must not be null");
+        Objects.requireNonNull(title, "Title must not be null");
+        Objects.requireNonNull(priority, "Priority must not be null");
+        Objects.requireNonNull(erpModule, "ErpModule must not be null");
+        Objects.requireNonNull(requesterId, "Requester ID must not be null");
+        Objects.requireNonNull(responseDeadline, "Response deadline must not be null");
+        Objects.requireNonNull(resolutionDeadline, "Resolution deadline must not be null");
+        Objects.requireNonNull(occurredOn, "OccurredOn timestamp must not be null");
+    }
 
     /**
-     * Static factory method to instantiate a TicketCreatedEvent directly from a verified Ticket aggregate.
+     * Static factory method to construct a validated {@link TicketCreatedEvent} from a {@link Ticket} aggregate.
      *
-     * @param ticket the fully constructed Ticket aggregate root. Must not be null.
-     * @param occurredOn the exact UTC timestamp when the domain event occurred. Must not be null.
-     * @return an immutable, validated TicketCreatedEvent instance ready for distribution.
-     * @throws NullPointerException if ticket or occurredOn is null.
+     * @param ticket the fully initialized {@link Ticket} aggregate. Must not be {@code null}.
+     * @param occurredOn the exact UTC timestamp when the domain event occurred. Must not be {@code null}.
+     * @return an immutable, validated {@link TicketCreatedEvent} instance.
+     * @throws NullPointerException if {@code ticket} or {@code occurredOn} is {@code null}.
      */
-    public static TicketCreatedEvent from(Ticket ticket, Instant occurredOn){
-        Objects.requireNonNull(ticket, "Ticket aggregate must not be null to generate TicketCreateEvent");
+    public static TicketCreatedEvent from(Ticket ticket, Instant occurredOn) {
+        Objects.requireNonNull(ticket, "Ticket aggregate must not be null to generate TicketCreatedEvent");
         Objects.requireNonNull(occurredOn, "OccurredOn timestamp must not be null");
 
         return TicketCreatedEvent.builder()
@@ -62,11 +87,11 @@ public final class TicketCreatedEvent {
                 .title(ticket.getTitle())
                 .priority(ticket.getPriority())
                 .erpModule(ticket.getErpModule())
+                .requesterId(ticket.getRequesterId())
                 .vipCustomer(ticket.isVipCustomer())
                 .responseDeadline(ticket.getSlaPolicy().getResponseDeadline())
                 .resolutionDeadline(ticket.getSlaPolicy().getResolutionDeadline())
                 .occurredOn(occurredOn)
                 .build();
     }
-
 }

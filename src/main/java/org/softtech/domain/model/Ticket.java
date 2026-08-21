@@ -32,7 +32,7 @@ public final class Ticket {
     private final TicketStatus status;
     private final Priority priority;
     private final ErpModule erpModule;
-    private final String requestedId;
+    private final String requesterId;
     private final String assignedAgentId;
     private final boolean vipCustomer;
     private final SlaPolicy slaPolicy;
@@ -54,7 +54,7 @@ public final class Ticket {
      * @param description the full technical context of the defect. Must not be null or blank
      * @param priority the operational urgency and severity level. Must not be null.
      * @param erpModule the affected ERP functional module. Must not be null.
-     * @param requestedId the identifier pf the reporting user or corporate tenant. Must not be null or blank
+     * @param requesterId the identifier pf the reporting user or corporate tenant. Must not be null or blank
      * @param isVipCustomer Indicates whether the requester holds high-priority enterprise SLA coverage
      * @param createdAt initial creation timestamp in UTC. Must not be null.
      * @return a fully initialized, valid Ticket instance in TicketStatus.OPEN status
@@ -67,7 +67,7 @@ public final class Ticket {
                                  String description,
                                  Priority priority,
                                  ErpModule erpModule,
-                                 String requestedId,
+                                 String requesterId,
                                  boolean isVipCustomer,
                                  Instant createdAt){
         Objects.requireNonNull(id, "Ticket ID must not be null");
@@ -76,7 +76,7 @@ public final class Ticket {
         Objects.requireNonNull(description, "Description must not be null");
         Objects.requireNonNull(priority, "Priority must not be null");
         Objects.requireNonNull(erpModule, "ErpModule must not be null");
-        Objects.requireNonNull(requestedId, "requester Id must not be null");
+        Objects.requireNonNull(requesterId, "requester Id must not be null");
         Objects.requireNonNull(createdAt, "Creation timestamp must not be null");
 
 
@@ -89,7 +89,7 @@ public final class Ticket {
         if (description.isBlank()){
             throw new IllegalArgumentException("Ticket description must not be blank");
         }
-        if (requestedId.isBlank()){
+        if (requesterId.isBlank()){
             throw new IllegalArgumentException("Requester ID must not be blank");
         }
 
@@ -103,7 +103,7 @@ public final class Ticket {
                 .status(TicketStatus.OPEN)
                 .priority(priority)
                 .erpModule(erpModule)
-                .requestedId(requestedId.trim())
+                .requesterId(requesterId.trim())
                 .assignedAgentId(null)
                 .vipCustomer(isVipCustomer)
                 .slaPolicy(calculatedPolicy)
