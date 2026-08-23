@@ -81,7 +81,7 @@ public record TicketStatusChangedEvent(
 
         return TicketStatusChangedEvent.builder()
                 .eventId(UUID.randomUUID().toString())
-                .eventId(EVENT_TYPE)
+                .eventType(EVENT_TYPE)
                 .ticketId(ticket.getId())
                 .ticketNumber(ticket.getTicketNumber())
                 .previousStatus(previousStatus)
