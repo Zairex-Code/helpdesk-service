@@ -140,11 +140,15 @@ public final class Ticket {
 
         Instant firstResponse = (this.firstResponseAt == null) ? assignedAt : this.firstResponseAt;
 
+        List<String> updatedNotes = new ArrayList<>(this.notes != null ? this.notes : Collections.emptyList());
+        updatedNotes.add(String.format("[%s] Assigned to agent: %s", assignedAt, agentId.trim()));
+
         return this.toBuilder()
                 .assignedAgentId(agentId.trim())
                 .status(TicketStatus.ASSIGNED)
                 .firstResponseAt(firstResponseAt)
                 .updatedAt(assignedAt)
+                .notes(Collections.unmodifiableList(updatedNotes))
                 .build();
 
     }
@@ -161,9 +165,13 @@ public final class Ticket {
         Objects.requireNonNull(startedAt, "Investigation start timestamp must not be null");
         validateTransition(TicketStatus.IN_PROGRESS);
 
+        List<String> updatedNotes = new ArrayList<>(this.notes != null ? this.notes : Collections.emptyList());
+        updatedNotes.add(String.format("[%s] Technical investigation initiated", startedAt));
+
         return this.toBuilder()
                 .status(TicketStatus.IN_PROGRESS)
                 .updatedAt(startedAt)
+                .notes(Collections.unmodifiableList(updatedNotes))
                 .build();
 
     }
@@ -214,11 +222,16 @@ public final class Ticket {
         Objects.requireNonNull(closedAt, "Closure timestamp must not be null");
         validateTransition(TicketStatus.CLOSED);
 
+        List<String> updatedNotes = new ArrayList<>(this.notes != null ? this.notes : Collections.emptyList());
+        updatedNotes.add(String.format("[%s] Ticket closed. CSAT Recorded: %s",
+                closedAt, (customerFeedback != null ? customerFeedback.getRating() + "/5" : "N/A")));
+
         return this.toBuilder()
                 .status(TicketStatus.CLOSED)
                 .feedback(customerFeedback)
                 .closedAt(closedAt)
                 .updatedAt(closedAt)
+                .notes(Collections.unmodifiableList(updatedNotes))
                 .build();
     }
 
@@ -243,13 +256,12 @@ public final class Ticket {
 
         validateTransition(TicketStatus.CANCELLED);
 
-        List<String> updatedNotes = new ArrayList<>(this.notes);
-        updatedNotes.add(
-                String.format("%s Canceled: %s", cancelledAt, reason.trim())
-        );
+        List<String> updatedNotes = new ArrayList<>(this.notes != null ? this.notes : Collections.emptyList());
+        updatedNotes.add(String.format("[%s] Cancelled. Reason: %s", cancelledAt, reason.trim()));
 
         return this.toBuilder()
                 .status(TicketStatus.CANCELLED)
+                .updatedAt(closedAt)
                 .updatedAt(cancelledAt)
                 .notes(Collections.unmodifiableList(updatedNotes))
                 .build();
@@ -273,8 +285,8 @@ public final class Ticket {
             throw new IllegalArgumentException("Note content must not be blank");
         }
 
-        List<String> updatedNotes = new ArrayList<>(this.notes);
-        updatedNotes.add(String.format("%s %s", notedAt, noteContent.trim()));
+        List<String> updatedNotes = new ArrayList<>(this.notes != null ? this.notes : Collections.emptyList());
+        updatedNotes.add(String.format("[%s] Note: %s", notedAt, noteContent.trim()));
 
         return this.toBuilder()
                 .updatedAt(notedAt)
@@ -289,7 +301,7 @@ public final class Ticket {
      * @return an unmodifiable List containing audit notes.
      */
     public List<String> getNotes(){
-        return Collections.unmodifiableList(this.notes);
+        return this.notes != null ? Collections.unmodifiableList(this.notes) : Collections.emptyList();
     }
 
 
