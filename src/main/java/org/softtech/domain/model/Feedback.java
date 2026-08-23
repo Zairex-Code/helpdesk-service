@@ -86,4 +86,14 @@ public final class Feedback {
         return this.rating <= DETRACTOR_THRESHOLD;
     }
 
+
+    /**
+     * Evaluates whether the recorded rating represents a neutral/passive customer evaluation.
+     *
+     * @return {@code true} if rating is between detractor and satisfaction thresholds (rating = 3); {@code false} otherwise.
+     */
+    public boolean isNeutral() {
+        return this.rating > DETRACTOR_THRESHOLD && this.rating < SATISFACTION_THRESHOLD;
+    }
+
 }

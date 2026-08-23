@@ -66,7 +66,7 @@ public enum ErpModule {
      */
     CORE_SYSTEM("COR", "Core System Administration", 4, true);
 
-    private final String moduleCode;
+    private final String code;
     private final String displayName;
     private final int criticalityWeight;
     private final boolean requiresSupervisorEscalation;
@@ -80,4 +80,5 @@ public enum ErpModule {
     public boolean isMissionCritical(){
         return this.criticalityWeight >= 4;
     }
+
 }
