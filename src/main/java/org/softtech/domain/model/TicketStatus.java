@@ -31,6 +31,7 @@ public enum TicketStatus {
      * and is pending active troubleshooting.
      */
     ASSIGNED {
+        @Override
         public Set<TicketStatus> allowedNextStates(){
             return EnumSet.of(IN_PROGRESS, OPEN, CANCELLED);
         }
@@ -42,6 +43,7 @@ public enum TicketStatus {
      * SLA operational response time is actively tracked in this state
      */
     IN_PROGRESS{
+        @Override
         public Set<TicketStatus> allowedNextStates(){
             return EnumSet.of(RESOLVED, ASSIGNED, CANCELLED);
         }
@@ -53,6 +55,7 @@ public enum TicketStatus {
      * CSAT survey feedback, or automated SLA closure.
      */
     RESOLVED{
+        @Override
         public Set<TicketStatus> allowedNextStates(){
             return EnumSet.of(CLOSED, IN_PROGRESS);
         }
@@ -64,6 +67,7 @@ public enum TicketStatus {
      * after the SLA feedback window. CSAT metrics are frozen.
      */
     CLOSED{
+        @Override
         public Set<TicketStatus> allowedNextStates(){
             return EnumSet.noneOf(TicketStatus.class);
         }
@@ -75,6 +79,7 @@ public enum TicketStatus {
      * by an authorized administrator or requester.
      */
     CANCELLED{
+        @Override
         public Set<TicketStatus> allowedNextStates(){
             return EnumSet.noneOf(TicketStatus.class);
         }
