@@ -25,7 +25,7 @@ import java.util.UUID;
  * @param ticketNumber the business-readable tracking sequence (e.g., "TICK-2026-0001")
  * @param requesterId the user or enterprise tenant who initiated the ticket
  * @param assignedAgentId the support engineer who delivered the final resolution (can be null)
- * @param totalLifeCycleDuration the total duration elapsed from creation to closure
+ * @param totalLifecycleDuration the total duration elapsed from creation to closure
  * @param resolvedAt the timestamp when technical resolution was achieved (can be null if cancelled)
  * @param closedAt the exact timestamp of permanent closure
  * @param feedback the customer satisfaction (CSAT) rating and commentary (can be null)
@@ -41,7 +41,7 @@ public record TicketClosedEvent(
         String ticketNumber,
         String requesterId,
         String assignedAgentId,
-        Duration totalLifeCycleDuration,
+        Duration totalLifecycleDuration,
         Instant resolvedAt,
         Instant closedAt,
         Feedback feedback,
@@ -49,20 +49,20 @@ public record TicketClosedEvent(
         Instant occurredOn
 ) {
 
-    public  final static String EVENT_TYPE = "HELP_DESK_TICKET_CLOSED_V1";
+    public static final String EVENT_TYPE = "HELP_DESK_TICKET_CLOSED_V1";
 
     /**
      * Compact constructor enforcing strict non-null invariants on mandatory lifecycle attributes.
      */
     public TicketClosedEvent{
-        Objects.requireNonNull(eventId, "Event Id must not be null");
-        Objects.requireNonNull(eventType,"Ticket type must not be null");
+        Objects.requireNonNull(eventId, "Event ID must not be null");
+        Objects.requireNonNull(eventType, "Event type must not be null");
         Objects.requireNonNull(ticketId, "Ticket ID must not be null");
         Objects.requireNonNull(ticketNumber, "Ticket number must not be null");
-        Objects.requireNonNull(requesterId, "Request Id must not be null");
-        Objects.requireNonNull(totalLifeCycleDuration, "Total Life cycle must not be null");
+        Objects.requireNonNull(requesterId, "Requester ID must not be null");
+        Objects.requireNonNull(totalLifecycleDuration, "Total lifecycle duration must not be null");
         Objects.requireNonNull(closedAt, "ClosedAt timestamp must not be null");
-        Objects.requireNonNull(occurredOn, "Occurred on timestamp must not be null");
+        Objects.requireNonNull(occurredOn, "OccurredOn timestamp must not be null");
     }
 
 
@@ -98,7 +98,7 @@ public record TicketClosedEvent(
                 .ticketNumber(ticket.getTicketNumber())
                 .requesterId(ticket.getRequesterId())
                 .assignedAgentId(ticket.getAssignedAgentId())
-                .totalLifeCycleDuration(totalDuration)
+                .totalLifecycleDuration(totalDuration)
                 .resolvedAt(ticket.getResolvedAt())
                 .closedAt(closedAt)
                 .feedback(ticket.getFeedback())
