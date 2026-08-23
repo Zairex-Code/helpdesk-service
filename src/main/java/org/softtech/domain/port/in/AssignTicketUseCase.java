@@ -34,22 +34,20 @@ public interface AssignTicketUseCase {
     /**
      * Immutable Command record encapsulating the validated parameters required for ticket assignment.
      *
-     * @param ticketIdentifier the technical UUID/BSON ID or business tracking number (e.g., "TICK-2026-0001"). Must not be {@code null} or blank.
+     * @param ticketId the technical UUID/BSON ID or business tracking number (e.g., "TICK-2026-0001"). Must not be {@code null} or blank.
      * @param agentId the unique identifier of the support specialist receiving the ticket. Must not be {@code null} or blank.
      */
-    record AssignTicketCommand(
-            String ticketIdentifier,
-            String agentId
-    ){
+    record AssignTicketCommand(String ticketId,
+                               String agentId){
 
         /**
          * Compact constructor enforcing strict non-null and non-blank invariants on command creation.
          */
         public AssignTicketCommand {
-            Objects.requireNonNull(ticketIdentifier, "Ticket identifier must not be null");
+            Objects.requireNonNull(ticketId, "Ticket identifier must not be null");
             Objects.requireNonNull(agentId, "Agent ID must not be null");
 
-            if (ticketIdentifier.isBlank()){
+            if (ticketId.isBlank()){
                 throw new IllegalArgumentException("Ticket ID must not be blank");
             }
             if (agentId.isBlank()){

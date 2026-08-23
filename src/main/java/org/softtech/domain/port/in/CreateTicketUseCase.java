@@ -42,13 +42,12 @@ public interface CreateTicketUseCase {
      * @param vipCustomer indicates whether the requester holds high-priority contractual SLA coverage.
      */
     record CreateTicketCommand(
-            String title,
-            String description,
-            Priority priority,
-            ErpModule erpModule,
-            String requesterId,
-            boolean vipCustomer
-    ){
+                                String title,
+                                String description,
+                                Priority priority,
+                                ErpModule erpModule,
+                                String requesterId,
+                                boolean vipCustomer){
 
         public CreateTicketCommand{
             Objects.requireNonNull(title, "Title must not be null");
