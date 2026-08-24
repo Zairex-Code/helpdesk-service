@@ -14,18 +14,18 @@ import java.util.Objects;
  * In strict compliance with Hexagonal Architecture (Ports and Adapters) and Domain-Driven Design (DDD),
  * this interface exposes ticket creation to driving adapters (e.g., REST endpoints, Kafka message consumers,
  * or scheduled tasks). It decouples transport protocols from domain orchestration, executing in a fully
- * non-blocking reactive stream powered by SmallRye Mutiny {@link Uni}.
+ * non-blocking reactive stream powered by SmallRye Mutiny Uni.
  *
  */
 public interface CreateTicketUseCase {
 
     /**
-     * Executes the creation and persistence of a new {@link Ticket} aggregate root reactively.
+     * Executes the creation and persistence of a new Ticket aggregate root reactively.
      *
-     * @param command the immutable input data carrier containing verified creation parameters. Must not be {@code null}.
-     * @return a {@link Uni} emitting the persisted {@link Ticket} aggregate upon successful processing.
-     * @throws NullPointerException if {@code command} is {@code null}.
-     * @throws IllegalArgumentException if string parameters inside {@code command} are blank.
+     * @param command the immutable input data carrier containing verified creation parameters. Must not be null.
+     * @return a Uni emitting the persisted Ticket aggregate upon successful processing.
+     * @throws NullPointerException if command is null.
+     * @throws IllegalArgumentException if string parameters inside command are blank.
      */
     Uni<Ticket> execute(CreateTicketCommand command);
 
@@ -34,11 +34,11 @@ public interface CreateTicketUseCase {
     /**
      * Immutable Command record encapsulating the necessary parameters to request ticket creation.
      *
-     * @param title the concise summary of the reported incident. Must not be {@code null} or blank.
-     * @param description the comprehensive technical context and reproduction steps. Must not be {@code null} or blank.
-     * @param priority the operational urgency and severity level. Must not be {@code null}.
-     * @param erpModule the affected ERP functional module. Must not be {@code null}.
-     * @param requesterId the enterprise user or tenant identifier reporting the incident. Must not be {@code null} or blank.
+     * @param title the concise summary of the reported incident. Must not be null or blank.
+     * @param description the comprehensive technical context and reproduction steps. Must not be null or blank.
+     * @param priority the operational urgency and severity level. Must not be null.
+     * @param erpModule the affected ERP functional module. Must not be null.
+     * @param requesterId the enterprise user or tenant identifier reporting the incident. Must not be null or blank.
      * @param vipCustomer indicates whether the requester holds high-priority contractual SLA coverage.
      */
     record CreateTicketCommand(
