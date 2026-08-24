@@ -89,25 +89,31 @@ public class TicketDocument {
 
 
     /**
-     * Embedded BSON sub-document record representing the SLA contractual deadlines and duration limits.
+     * Embedded BSON sub-document record representing the SLA contractual deadlines, durations, and escalation flags.
      *
      * @param responseDeadline the calculated UTC deadline for the initial agent response
      * @param resolutionDeadline the calculated UTC deadline for full incident resolution
-     * @param maxResponseTimeMinutes the maximum allowable response threshold in minutes
-     * @param maxResolutionTimeMinutes the maximum allowable resolution threshold in minutes
+     * @param maxResponseDurationMillis maximum allowable response threshold stored in milliseconds
+     * @param maxResolutionDurationMillis maximum allowable resolution threshold stored in milliseconds
+     * @param escalationRequired indicates whether immediate supervisor escalation was triggered
      */
     public record SlaPolicyDocument(
+
             @BsonProperty("response_deadline")
             Instant responseDeadline,
 
             @BsonProperty("resolution_deadline")
             Instant resolutionDeadline,
 
-            @BsonProperty("max_response_time_minutes")
-            long maxResponseTimeMinutes,
+            @BsonProperty("max_response_duration_ms")
+            Long maxResponseDurationMillis,
 
-            @BsonProperty("max_resolution_time_minutes")
-            long maxResolutionTimeMinutes
+            @BsonProperty("max_resolution_duration_ms")
+            Long maxResolutionDurationMillis,
+
+            @BsonProperty("escalation_required")
+            boolean escalationRequired
+
     ){}
 
 
