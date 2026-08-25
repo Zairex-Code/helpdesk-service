@@ -1,6 +1,7 @@
 package org.softtech.infrastructure.persistence.repository;
 
 import io.quarkus.mongodb.panache.reactive.ReactivePanacheMongoRepository;
+import io.quarkus.mongodb.panache.reactive.ReactivePanacheMongoRepositoryBase;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -21,7 +22,7 @@ import java.util.Objects;
  * @version 1.0.0
  */
 @ApplicationScoped
-public class ReactiveTicketPanacheRepository implements ReactivePanacheMongoRepository<TicketDocument> {
+public class ReactiveTicketPanacheRepository implements ReactivePanacheMongoRepositoryBase<TicketDocument, String> {
 
 
     private static final String FIELD_TICKET_NUMBER = "ticket_number";
