@@ -19,21 +19,17 @@ import java.util.Objects;
 
 /**
  * Secondary (Driven) Infrastructure Adapter implementing the TicketEventPublisherPort outbound port.
- * <p>
+ *
  * Bridges the pure Domain Event lifecycle with Apache Kafka distributed event streaming infrastructure
  * using SmallRye Reactive Messaging (MutinyEmitter).
  * It enforces deterministic, partition-aware message routing by binding the record component {@code ticketNumber()}
  * as the Kafka Record Key, ensuring strict chronological ordering (FIFO) for all lifecycle events emitted
  * by a specific ticket aggregate.
- * </p>
- * <p>
+
  * In strict compliance with ISO/IEC 25010 Reliability (Fault Tolerance, Auditability) and CMMI Level 2/3
  * Service Quality Measurement standards, all event payloads are serialized to canonical JSON CloudEvent representations
  * and dispatched asynchronously without blocking the Netty Event Loop.
- * </p>
  *
- * @author SoftTech Architecture Team
- * @version 1.0.0
  */
 @Slf4j
 @ApplicationScoped
