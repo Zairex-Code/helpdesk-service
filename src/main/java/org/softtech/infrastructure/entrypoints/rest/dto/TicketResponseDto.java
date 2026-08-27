@@ -9,7 +9,45 @@ import org.softtech.domain.model.TicketStatus;
 
 import java.time.Instant;
 
-
+/**
+ * Immutable Data Transfer Object (DTO) representing the complete read projection of a support ticket.
+ * <p>
+ * Employs the DTO Flattening Pattern to consolidate the rich domain aggregate (including embedded
+ * Value Objects like {@code SlaPolicy} and {@code Feedback}) into an optimized, transport-friendly structure.
+ * Designed with MicroProfile OpenAPI 3.1 / 4.0+ annotations using array-based examples to ensure zero
+ * deprecation warnings and deterministic client SDK generation.
+ * </p>
+ * <p>
+ * In strict compliance with ISO/IEC 25010 Performance Efficiency (Time Behavior & Resource Utilization)
+ * and CMMI Level 2/3 Service Measurement standards, this record is shallowly immutable, thread-safe,
+ * and serialized directly without intermediate reflection proxies on the Netty Event Loop.
+ * </p>
+ *
+ * @param id the technical database persistence identifier (UUID v4)
+ * @param ticketNumber the unique business-readable tracking sequence (e.g., "TICK-2026-0001")
+ * @param title the concise summary of the reported technical incident
+ * @param description the full diagnostic reproduction steps and operational context
+ * @param status the current lifecycle state of the ticket
+ * @param priority the operational urgency and severity level
+ * @param erpModule the impacted ERP functional module
+ * @param requesterId the corporate user or tenant identifier who reported the ticket
+ * @param vipCustomer indicates whether the requester holds premium SLA coverage
+ * @param assignedAgentId the support specialist currently handling the ticket (nullable)
+ * @param resolutionNotes the technical solution summary provided upon resolution (nullable)
+ * @param responseDeadline the calculated UTC deadline for initial ticket response
+ * @param resolutionDeadline the calculated UTC deadline for final incident resolution
+ * @param isResponseSlaBreached indicates whether the initial response exceeded contractual SLA
+ * @param isResolutionSlaBreached indicates whether final resolution exceeded contractual SLA
+ * @param csatRating the customer satisfaction rating between 1 and 5 (nullable)
+ * @param csatComment the qualitative user feedback provided upon closure (nullable)
+ * @param createdAt the exact UTC timestamp when the ticket was opened
+ * @param updatedAt the exact UTC timestamp of the most recent modification
+ * @param resolvedAt the exact UTC timestamp when technical resolution was achieved (nullable)
+ * @param closedAt the exact UTC timestamp of terminal ticket closure (nullable)
+ *
+ * @author SoftTech Architecture Team
+ * @version 1.0.0
+ */
 @Builder(toBuilder = true)
 @Jacksonized
 @Schema(
