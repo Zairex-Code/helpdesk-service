@@ -165,13 +165,13 @@ existe un endpoint de login que emite JWTs firmados y **solo está disponible en
 |---|---|---|
 | `POST` | `/api/v1/auth/login` | Autentica un usuario de desarrollo y devuelve un JWT |
 
-Usuarios de desarrollo (contraseña **`dylan`**):
+**Credenciales de desarrollo** (contraseña para todos: **`dylan`**):
 
-| Email | Rol |
-|---|---|
-| `cliente@softtech.com` | `CLIENTE` |
-| `soporte@softtech.com` | `SOPORTE_TI` |
-| `admin@softtech.com` | `ADMIN` |
+| Email | Contraseña | Rol |
+|---|---|---|
+| `cliente@softtech.com` | `dylan` | `CLIENTE` |
+| `soporte@softtech.com` | `dylan` | `SOPORTE_TI` |
+| `admin@softtech.com` | `dylan` | `ADMIN` |
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/login \
@@ -327,6 +327,33 @@ docker compose up -d
 
 Los puertos se re-mapean para no colisionar con otros proyectos. Kafka UI permite inspeccionar el topic
 `helpdesk.ticket-events.v1` en `http://localhost:8088`.
+
+### 7.1 Datos de prueba (seed automático)
+
+Al arrancar en modo dev (`./mvnw quarkus:dev`) y **si la colección `tickets` está vacía**, un seeder
+(`DevDataSeeder`, solo activo en el perfil `dev`) inserta 10 tickets de ejemplo que cubren todos los estados
+del ciclo de vida, prioridades, módulos ERP y clientes VIP/no-VIP:
+
+| # | ticketNumber | Estado | Prioridad | Módulo | Solicitante | VIP |
+|---|---|---|---|---|---|---|
+| 1 | `TICK-2026-0001` | `OPEN` | `HIGH` | `HUMAN_RESOURCES` | `USR-CORP-98421` | Sí |
+| 2 | `TICK-2026-0002` | `OPEN` | `CRITICAL` | `FINANCIAL` | `USR-CORP-22100` | No |
+| 3 | `TICK-2026-0003` | `ASSIGNED` | `MEDIUM` | `CRM` | `USR-CORP-45010` | No |
+| 4 | `TICK-2026-0004` | `IN_PROGRESS` | `HIGH` | `BILLING` | `USR-CORP-11890` | No |
+| 5 | `TICK-2026-0005` | `RESOLVED` | `MEDIUM` | `INVENTORY` | `USR-CORP-77210` | No |
+| 6 | `TICK-2026-0006` | `CLOSED` | `LOW` | `CRM` | `USR-CORP-55120` | No |
+| 7 | `TICK-2026-0007` | `CLOSED` | `HIGH` | `CORE_SYSTEM` | `USR-CORP-98421` | Sí |
+| 8 | `TICK-2026-0008` | `CANCELLED` | `LOW` | `SUPPLY_CHAIN` | `USR-CORP-30240` | No |
+| 9 | `TICK-2026-0009` | `OPEN` | `MEDIUM` | `SALES` | `USR-CORP-66510` | No |
+| 10 | `TICK-2026-0010` | `IN_PROGRESS` | `CRITICAL` | `FINANCIAL` | `USR-CORP-22100` | Sí |
+
+- Si MongoDB no está disponible al arrancar, el seeder registra un warning y se omite (no rompe el arranque).
+- Si ya existen datos, el seeder no hace nada.
+- Para volver a poblar desde cero, vacía la colección y reinicia:
+  ```bash
+  docker compose exec mongodb mongosh -u helpdesk_admin -p helpdesk_secret_password \
+    --authenticationDatabase admin helpdesk_db --eval "db.tickets.deleteMany({})"
+  ```
 
 ---
 
@@ -564,8 +591,10 @@ helpdesk-service/
     │           │       └── ReactiveTicketPanacheRepository.java  # Acceso a datos Panache reactivo
     │           ├── cache/adapter/
     │           │   └── TicketRedisAdapter.java          #  Implementa TicketCachePort (Redis)
-    │           └── messaging/
-    │               └── KafkaTicketEventPublisher.java   #  Implementa TicketEventPublisherPort (Kafka)
+    │           ├── messaging/
+    │           │   └── KafkaTicketEventPublisher.java   #  Implementa TicketEventPublisherPort (Kafka)
+    │           └── seed/
+    │               └── DevDataSeeder.java               #  Seeder dev (puebla MongoDB con tickets de ejemplo)
     └── test/java/org/softtech/                # ───── PRUEBAS ─────
         ├── domain/                            #   Tests de dominio (FSM, SLA, Feedback, eventos, excepciones)
         │   ├── model/
