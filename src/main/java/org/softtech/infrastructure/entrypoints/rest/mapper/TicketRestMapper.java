@@ -94,7 +94,9 @@ public interface TicketRestMapper {
     @Named("mapIsResponseSlaBreached")
     default boolean mapIsResponseSlaBreached(Ticket ticket) {
         if (ticket == null || ticket.getSlaPolicy() == null) {
+
             return false;
+
         }
         Instant evaluationInstant = ticket.getFirstResponseAt() != null ? ticket.getFirstResponseAt() : Instant.now();
         return ticket.isFirstResponseBreached(evaluationInstant);
