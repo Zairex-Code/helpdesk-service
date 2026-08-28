@@ -3,9 +3,9 @@ package org.softtech.domain.model;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.softtech.domain.exception.InvalidStatusTransitionException;
 
 import java.time.Instant;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -151,8 +151,8 @@ class TicketTest {
         @Test
         @DisplayName("Should reject illegal transitions OPEN -> CLOSED and OPEN -> RESOLVED")
         void shouldRejectIllegalTransitions() {
-            assertThrows(IllegalStateException.class, () -> openTicket().resolve("fix", CREATED_AT));
-            assertThrows(IllegalStateException.class, () ->
+            assertThrows(InvalidStatusTransitionException.class, () -> openTicket().resolve("fix", CREATED_AT));
+            assertThrows(InvalidStatusTransitionException.class, () ->
                     openTicket().closeWithFeedback(null, CREATED_AT));
         }
 
@@ -165,18 +165,18 @@ class TicketTest {
                     .resolve("fix", CREATED_AT.plusSeconds(3))
                     .closeWithFeedback(null, CREATED_AT.plusSeconds(4));
 
-            assertThrows(IllegalStateException.class, () -> closed.assignToAgent("AGT-2", CREATED_AT.plusSeconds(5)));
-            assertThrows(IllegalStateException.class, () -> closed.resolve("fix", CREATED_AT.plusSeconds(5)));
+            assertThrows(InvalidStatusTransitionException.class, () -> closed.assignToAgent("AGT-2", CREATED_AT.plusSeconds(5)));
+            assertThrows(InvalidStatusTransitionException.class, () -> closed.resolve("fix", CREATED_AT.plusSeconds(5)));
 
             Ticket cancelled = openTicket().cancel("duplicate", CREATED_AT.plusSeconds(5));
-            assertThrows(IllegalStateException.class, () -> cancelled.startInvestigation(CREATED_AT.plusSeconds(6)));
+            assertThrows(InvalidStatusTransitionException.class, () -> cancelled.startInvestigation(CREATED_AT.plusSeconds(6)));
         }
 
         @Test
         @DisplayName("Should reject reassigning an already ASSIGNED ticket")
         void shouldRejectReassign() {
             Ticket assigned = openTicket().assignToAgent("AGT-1", CREATED_AT.plusSeconds(1));
-            assertThrows(IllegalStateException.class, () -> assigned.assignToAgent("AGT-2", CREATED_AT.plusSeconds(2)));
+            assertThrows(InvalidStatusTransitionException.class, () -> assigned.assignToAgent("AGT-2", CREATED_AT.plusSeconds(2)));
         }
     }
 

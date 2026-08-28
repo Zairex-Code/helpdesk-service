@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.softtech.domain.event.TicketStatusChangedEvent;
+import org.softtech.domain.exception.InvalidStatusTransitionException;
 import org.softtech.domain.exception.TicketNotFoundException;
 import org.softtech.domain.model.ErpModule;
 import org.softtech.domain.model.Priority;
@@ -114,7 +115,7 @@ class AssignTicketUseCaseTest {
                 .subscribe().withSubscriber(UniAssertSubscriber.create());
 
         subscriber.awaitFailure(Duration.ofSeconds(2))
-                .assertFailedWith(IllegalStateException.class, null);
+                .assertFailedWith(InvalidStatusTransitionException.class, null);
 
         verify(ticketPersistencePort, never()).update(any(Ticket.class));
     }

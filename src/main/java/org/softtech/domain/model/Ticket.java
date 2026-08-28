@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.softtech.domain.exception.InvalidStatusTransitionException;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -124,7 +125,7 @@ public final class Ticket {
      * @param agentId the unique identifier of the support engineer. Must not be null or blank
      * @param assignedAt the timestamp when assignment occurred. Must not be null.
      * @return a new Ticket instance with updated status, assigned agent, and audit timestamp.
-     * @throws IllegalStateException if the state machine transition from current status to TicketStatus.ASSIGNED is illegal
+     * @throws InvalidStatusTransitionException if the state machine transition from current status to TicketStatus.ASSIGNED is illegal
      * @throws NullPointerException if agentId or assignedAt is null.
      * @throws IllegalArgumentException if agentId is blank
      */
@@ -158,7 +159,7 @@ public final class Ticket {
      *
      * @param startedAt the timestamp when active investigation started. Must not be null.
      * @return a new Ticket instance in TicketStatus#IN_PROGRESS status.
-     * @throws IllegalStateException if transitioning to TicketStatus#IN_PROGRESS violates the state machine.
+     * @throws InvalidStatusTransitionException if transitioning to TicketStatus#IN_PROGRESS violates the state machine.
      * @throws NullPointerException if startedAt is null.
      */
     public Ticket startInvestigation(Instant startedAt){
@@ -182,7 +183,7 @@ public final class Ticket {
      * @param resolutionNote concise technical summary of the fix applied. Must not be null or blank.
      * @param resolvedAt the exact timestamp of technical resolution. Must not be null.
      * @return a new Ticket instance with updated resolution status, appended note, and timestamp.
-     * @throws IllegalStateException if transitioning to TicketStatus#RESOLVED violates the state machine.
+     * @throws InvalidStatusTransitionException if transitioning to TicketStatus#RESOLVED violates the state machine.
      * @throws NullPointerException if resolutionNote or resolvedAt is null.
      * @throws IllegalArgumentException if resolutionNote is blank.
      */
@@ -215,7 +216,7 @@ public final class Ticket {
      * @param customerFeedback the CSAT rating and comments submitted by the user. Can be null if auto-closed.
      * @param closedAt the exact timestamp of final closure. Must not be null.
      * @return a new Ticket instance in terminal TicketStatus#CLOSED status.
-     * @throws IllegalStateException if transitioning to TicketStatus#CLOSED violates the state machine.
+     * @throws InvalidStatusTransitionException if transitioning to TicketStatus#CLOSED violates the state machine.
      * @throws NullPointerException if closedAt is null.
      */
     public Ticket closeWithFeedback(Feedback customerFeedback, Instant closedAt){
@@ -242,7 +243,7 @@ public final class Ticket {
      * @param reason the business or operational rationale for cancellation. Must not be null or blank.
      * @param cancelledAt the timestamp when cancellation occurred. Must not be null.
      * @return a new Ticket instance in terminal TicketStatus#CANCELLED status.
-     * @throws IllegalStateException if transitioning to TicketStatus#CANCELLED violates the state machine.
+     * @throws InvalidStatusTransitionException if transitioning to TicketStatus#CANCELLED violates the state machine.
      * @throws NullPointerException if reason or cancelledAt is null.
      * @throws IllegalArgumentException if reason is blank.
      */
@@ -332,14 +333,11 @@ public final class Ticket {
      * Internal invariant validator enforcing deterministic finite-state machine (FSM) rules.
      *
      * @param targetStatus the desired destination TicketStatus.
-     * @throws IllegalStateException if the transition is explicitly prohibited by domain rules.
+     * @throws InvalidStatusTransitionException if the transition is explicitly prohibited by domain rules.
      */
     private void validateTransition(TicketStatus targetStatus){
         if (!this.status.canTransitionTo(targetStatus)){
-            throw new IllegalStateException(
-                    String.format("Invalid state transition: Cannot transition Ticket '%s' from %s to %s",
-                            this.ticketNumber, this.status, targetStatus)
-            );
+            throw new InvalidStatusTransitionException(this.ticketNumber, this.status, targetStatus);
         }
     }
 }
