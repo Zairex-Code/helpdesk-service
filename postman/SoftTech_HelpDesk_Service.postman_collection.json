@@ -1,0 +1,383 @@
+{
+  "info": {
+    "_postman_id": "8e2f0f6b-4a5c-4f0d-9c1b-1a2b3c4d5e6f",
+    "name": "SoftTech HelpDesk Service",
+    "description": "Colección de pruebas para el microservicio reactivo de gestión de incidencias (HelpDesk).\n\nBase URL: {{base_url}} (por defecto http://localhost:8080)\nAutenticación: JWT Bearer (variable {{token}})\n\nRoles disponibles:\n  - CLIENTE (crear y cerrar tickets)\n  - SOPORTE_TI (asignar, investigar y resolver)\n  - ADMIN (acceso completo)\n\nFlujo sugerido:\n  1. Crear ticket (guarda automáticamente ticket_id y ticket_number)\n  2. Asignar -> Iniciar investigación -> Resolver -> Cerrar con CSAT\n\nEjecutar la app: ./mvnw quarkus:dev",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "token",
+      "value": "PEGAR_AQUI_EL_JWT"
+    },
+    {
+      "key": "ticket_id",
+      "value": ""
+    },
+    {
+      "key": "ticket_number",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Ciclo de vida",
+      "description": "Flujo completo: Crear -> Asignar -> Iniciar investigación -> Resolver -> Cerrar.",
+      "item": [
+        {
+          "name": "Crear ticket",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.id) {",
+                  "    pm.collectionVariables.set('ticket_id', response.id);",
+                  "}",
+                  "if (response.ticketNumber) {",
+                  "    pm.collectionVariables.set('ticket_number', response.ticketNumber);",
+                  "}",
+                  "pm.test('Status es 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Cuerpo contiene id', () => pm.expect(response.id).to.exist);",
+                  "pm.test('Estado inicial OPEN', () => pm.expect(response.status).to.eql('OPEN'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Database timeout in payroll batch\",\n  \"description\": \"PostgreSQL deadlock detected during concurrent payroll execution in ERP-RRHH.\",\n  \"priority\": \"HIGH\",\n  \"erpModule\": \"HUMAN_RESOURCES\",\n  \"requesterId\": \"USR-CORP-98421\",\n  \"vipCustomer\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Asignar ticket",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assignedAgentId\": \"AGT-TI-5042\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/{{ticket_id}}/assign",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets",
+                "{{ticket_id}}",
+                "assign"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Iniciar investigación",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/{{ticket_id}}/start-investigation",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets",
+                "{{ticket_id}}",
+                "start-investigation"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resolver ticket",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resolutionNotes\": \"Adjusted isolation level and optimized batch chunking size in the payroll transaction manager.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/{{ticket_id}}/resolve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets",
+                "{{ticket_id}}",
+                "resolve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cerrar ticket (con CSAT)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Excellent support before the payroll cutoff!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/{{ticket_id}}/close",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets",
+                "{{ticket_id}}",
+                "close"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. Cancelar ticket",
+      "description": "Cancela un ticket en estado terminal CANCELLED.",
+      "item": [
+        {
+          "name": "Cancelar ticket",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Duplicate ticket already tracked under TICK-2026-0041\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/{{ticket_id}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets",
+                "{{ticket_id}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. Consultas (GET)",
+      "description": "Consultas reactivas del agregado Ticket.",
+      "item": [
+        {
+          "name": "Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/{{ticket_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets",
+                "{{ticket_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener por número",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/number/{{ticket_number}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets",
+                "number",
+                "{{ticket_number}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar todos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar por estado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/status/OPEN",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets",
+                "status",
+                "OPEN"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar por solicitante",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/tickets/requester/USR-CORP-98421",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tickets",
+                "requester",
+                "USR-CORP-98421"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
