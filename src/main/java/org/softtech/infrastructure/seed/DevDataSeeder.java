@@ -72,7 +72,7 @@ public class DevDataSeeder {
                 "seed-1", "TICK-2026-0001",
                 "Database timeout in payroll batch",
                 "PostgreSQL deadlock detected when processing 5 000+ employee payroll records concurrently in ERP-RRHH.",
-                Priority.HIGH, ErpModule.HUMAN_RESOURCES, "USR-CORP-98421", true,
+                Priority.HIGH, ErpModule.HUMAN_RESOURCES, "cliente@softtech.com", true,
                 base.minus(Duration.ofHours(1)));
 
         Ticket openFinance = ticket(
@@ -128,7 +128,7 @@ public class DevDataSeeder {
                 "seed-7", "TICK-2026-0007",
                 "RBAC role assignment fails after LDAP sync for corporate users",
                 "Users authenticated via LDAP cannot inherit the mapped ERP roles after the nightly sync cron job.",
-                Priority.HIGH, ErpModule.CORE_SYSTEM, "USR-CORP-98421", true,
+                Priority.HIGH, ErpModule.CORE_SYSTEM, "cliente@softtech.com", true,
                 base.minus(Duration.ofDays(2)))
                 .assignToAgent(AGENT_TI_5042, base.minus(Duration.ofHours(47)).plus(Duration.ofMinutes(30)))
                 .startInvestigation(base.minus(Duration.ofHours(46)).plus(Duration.ofMinutes(45)))
