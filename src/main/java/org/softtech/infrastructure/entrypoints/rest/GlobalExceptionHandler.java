@@ -162,7 +162,8 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
 
-        return RestResponse.status(RestResponse.Status.fromStatusCode(422), errorDto);
+        RestResponse.ResponseBuilder<ErrorResponseDto> builder = RestResponse.ResponseBuilder.create(422);
+        return builder.entity(errorDto).build();
     }
 
     /**
