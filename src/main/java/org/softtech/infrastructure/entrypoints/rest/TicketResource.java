@@ -17,7 +17,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.jboss.resteasy.reactive.RestStreamElementType;
 import org.softtech.domain.model.TicketStatus;
 import org.softtech.domain.port.in.AssignTicketUseCase;
 import org.softtech.domain.port.in.AssignTicketUseCase.AssignTicketCommand;
@@ -137,8 +136,8 @@ public class TicketResource {
      * Streams all support tickets.
      */
     @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({Roles.CLIENTE, Roles.SOPORTE_TI, Roles.ADMIN})
-    @RestStreamElementType(MediaType.APPLICATION_JSON)
     public Multi<TicketResponseDto> listAll() {
         return getTicketUseCase.listAll().map(ticketRestMapper::toResponseDto);
     }
@@ -148,8 +147,8 @@ public class TicketResource {
      */
     @GET
     @Path("/status/{status}")
+    @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({Roles.CLIENTE, Roles.SOPORTE_TI, Roles.ADMIN})
-    @RestStreamElementType(MediaType.APPLICATION_JSON)
     public Multi<TicketResponseDto> listByStatus(@PathParam("status") TicketStatus status) {
         return getTicketUseCase.listByStatus(status).map(ticketRestMapper::toResponseDto);
     }
@@ -159,8 +158,8 @@ public class TicketResource {
      */
     @GET
     @Path("/requester/{requesterId}")
+    @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed({Roles.CLIENTE, Roles.SOPORTE_TI, Roles.ADMIN})
-    @RestStreamElementType(MediaType.APPLICATION_JSON)
     public Multi<TicketResponseDto> listByRequester(@PathParam("requesterId") String requesterId) {
         return getTicketUseCase.listByRequesterId(requesterId).map(ticketRestMapper::toResponseDto);
     }
