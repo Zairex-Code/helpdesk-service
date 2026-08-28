@@ -46,6 +46,62 @@
   ],
   "item": [
     {
+      "name": "0. Auth (login)",
+      "description": "Obtiene un JWT de desarrollo y lo guarda en la variable {{token}}.\n\nCredenciales demo (password: dylan):\n  - cliente@softtech.com -> CLIENTE\n  - soporte@softtech.com -> SOPORTE_TI\n  - admin@softtech.com -> ADMIN",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.token) {",
+                  "    pm.collectionVariables.set('token', response.token);",
+                  "}",
+                  "pm.test('Status es 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Token generado', () => pm.expect(response.token).to.exist);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"soporte@softtech.com\",\n  \"password\": \"dylan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "1. Ciclo de vida",
       "description": "Flujo completo: Crear -> Asignar -> Iniciar investigación -> Resolver -> Cerrar.",
       "item": [

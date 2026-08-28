@@ -155,6 +155,36 @@ Todos los eventos se publican al topic `helpdesk.ticket-events.v1` usando el `ti
 
 Base URL: `/api/v1/tickets`. Autenticación **JWT Bearer**. Roles: `CLIENTE`, `SOPORTE_TI`, `ADMIN`.
 
+### 4.0 Autenticación (solo desarrollo)
+
+En producción la autenticación se delega al Identity Provider corporativo (RF-01). Para el desarrollo local,
+existe un endpoint de login que emite JWTs firmados y **solo está disponible en el perfil `dev`**
+(`./mvnw quarkus:dev`); se elimina automáticamente en builds de producción.
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `POST` | `/api/v1/auth/login` | Autentica un usuario de desarrollo y devuelve un JWT |
+
+Usuarios de desarrollo (contraseña **`dylan`**):
+
+| Email | Rol |
+|---|---|
+| `cliente@softtech.com` | `CLIENTE` |
+| `soporte@softtech.com` | `SOPORTE_TI` |
+| `admin@softtech.com` | `ADMIN` |
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "soporte@softtech.com", "password": "dylan"}'
+# -> { "token": "<JWT>", "tokenType": "Bearer", "expiresInSeconds": 3600 }
+```
+
+> **Importante:** la clave privada (`privateKey.pem`) y el endpoint de login son **SOLO PARA DESARROLLO**.
+> No deben usarse ni desplegarse en entornos de producción.
+
+### 4.1 Endpoints de tickets
+
 | Método | Endpoint | Descripción | Roles |
 |---|---|---|---|
 | `POST` | `/api/v1/tickets` | Crear ticket | `CLIENTE`, `SOPORTE_TI`, `ADMIN` |
@@ -408,12 +438,12 @@ postman/SoftTech_HelpDesk_Service.postman_collection.json
 2. **Abre Postman** → *Import* → arrastra o selecciona
    `postman/SoftTech_HelpDesk_Service.postman_collection.json`.
 
-3. **Configura las variables de colección**:
-   - `base_url`: `http://localhost:8080` (ya configurado).
-   - `token`: pega tu **JWT Bearer** (emitido por el IdP). La colección usa autenticación *Bearer* de forma
-     automática en todas las peticiones.
-   - `ticket_id` y `ticket_number`: **no hace falta** llenarlas; se auto-completan al ejecutar "Crear ticket"
-     (la colección guarda la respuesta en estas variables).
+3. **Haz login** (carpeta *0. Auth (login)*):
+   - Ejecuta la petición **"Login"**. Está pre-configurada con `soporte@softtech.com` / `dylan`.
+   - La respuesta guarda automáticamente el JWT en la variable de colección `token`.
+   - El resto de peticiones usan `Authorization: Bearer {{token}}` de forma automática.
+
+   > Otra opción: pega manualmente un JWT en la variable `token` si prefieres usar un token de tu IdP.
 
 4. **Ejecuta el flujo de vida** (carpeta *1. Ciclo de vida*, en orden):
    1. **Crear ticket** → devuelve `201` y guarda `ticket_id`/`ticket_number` automáticamente.
@@ -434,12 +464,12 @@ postman/SoftTech_HelpDesk_Service.postman_collection.json
 | Asignar / Investigar / Resolver / Cancelar | `SOPORTE_TI`, `ADMIN` |
 | Consultas | cualquier rol autenticado |
 
-Si una petición se ejecuta con un token cuyo rol no corresponde, la API devuelve `403 Forbidden` (o `401`
-si el token falta). Puedes probar el comportamiento con el mismo token cambiando el `roles` en tu IdP.
+Para probar el RBAC, cambia el `email` del cuerpo de **Login** (cliente/soporte/admin, password `dylan`)
+y vuelve a ejecutar la petición para re-generar el token con otro rol. Si una petición se ejecuta con un
+token cuyo rol no corresponde, la API devuelve `403 Forbidden` (o `401` si el token falta).
 
 > **Nota:** el `token` se envía en el header `Authorization: Bearer {{token}}` definido a nivel de colección.
-> Si tu flujo de autenticación requiere obtener el token primero, añade una petición de login y configura la
-> variable `token` con el resultado.
+> El endpoint de login y las credenciales demo (`dylan`) solo existen en el perfil `dev`.
 
 ---
 
@@ -461,7 +491,9 @@ helpdesk-service/
     ├── main/
     │   ├── docker/                            # Dockerfiles (JVM, legacy-jar, native, native-micro)
     │   ├── resources/
-    │   │   └── application.properties         # Configuración (HTTP, Mongo, Redis, Kafka, JWT, OpenAPI, logs)
+    │   │   ├── application.properties         # Configuración (HTTP, Mongo, Redis, Kafka, JWT, OpenAPI, logs)
+    │   │   ├── publicKey.pem                  # Clave pública RSA para verificar JWTs
+    │   │   └── privateKey.pem                 # Clave privada RSA (SOLO DESARROLLO, firma del login dev)
     │   └── java/org/softtech/
     │       ├── domain/                        # ───── DOMINIO PURO (sin dependencias de framework) ─────
     │       │   ├── model/
@@ -506,6 +538,7 @@ helpdesk-service/
     │           │   └── OpenApiConfig.java     #   Configuración OpenAPI/Swagger + esquema JWT
     │           ├── entrypoints/rest/
     │           │   ├── TicketResource.java    #   Controlador REST /api/v1/tickets (+ @RolesAllowed)
+    │           │   ├── AuthResource.java      #   Login dev (/api/v1/auth/login, solo perfil dev)
     │           │   ├── Roles.java             #   Constantes de roles RBAC
     │           │   ├── GlobalExceptionHandler.java  #  Mapeo de excepciones a RFC 7807
     │           │   ├── mapper/
@@ -517,6 +550,8 @@ helpdesk-service/
     │           │       ├── ResolveTicketRequestDto.java
     │           │       ├── CloseTicketRequestDto.java
     │           │       ├── CancelTicketRequestDto.java
+    │           │       ├── LoginRequestDto.java
+    │           │       ├── LoginResponseDto.java
     │           │       └── ErrorResponseDto.java
     │           ├── persistence/
     │           │   ├── adapter/
