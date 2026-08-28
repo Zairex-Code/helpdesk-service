@@ -5,6 +5,7 @@ import io.smallrye.mutiny.Uni;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
@@ -93,7 +94,7 @@ public class TicketResource {
      */
     @POST
     @RolesAllowed({Roles.CLIENTE, Roles.SOPORTE_TI, Roles.ADMIN})
-    public Uni<Response> create(TicketRequestDto request, @Context UriInfo uriInfo) {
+    public Uni<Response> create(@Valid TicketRequestDto request, @Context UriInfo uriInfo) {
         CreateTicketCommand command = new CreateTicketCommand(
                 request.title(),
                 request.description(),
@@ -170,7 +171,7 @@ public class TicketResource {
     @PATCH
     @Path("/{id}/assign")
     @RolesAllowed({Roles.SOPORTE_TI, Roles.ADMIN})
-    public Uni<TicketResponseDto> assign(@PathParam("id") String id, AssignTicketRequestDto request) {
+    public Uni<TicketResponseDto> assign(@PathParam("id") String id, @Valid AssignTicketRequestDto request) {
         AssignTicketCommand command = new AssignTicketCommand(id, request.assignedAgentId());
         return assignTicketUseCase.execute(command).map(ticketRestMapper::toResponseDto);
     }
@@ -192,7 +193,7 @@ public class TicketResource {
     @PATCH
     @Path("/{id}/resolve")
     @RolesAllowed({Roles.SOPORTE_TI, Roles.ADMIN})
-    public Uni<TicketResponseDto> resolve(@PathParam("id") String id, ResolveTicketRequestDto request) {
+    public Uni<TicketResponseDto> resolve(@PathParam("id") String id, @Valid ResolveTicketRequestDto request) {
         ResolveTicketCommand command = new ResolveTicketCommand(id, request.resolutionNotes());
         return resolveTicketUseCase.execute(command).map(ticketRestMapper::toResponseDto);
     }
@@ -203,7 +204,7 @@ public class TicketResource {
     @PATCH
     @Path("/{id}/close")
     @RolesAllowed({Roles.CLIENTE, Roles.ADMIN})
-    public Uni<TicketResponseDto> close(@PathParam("id") String id, CloseTicketRequestDto request) {
+    public Uni<TicketResponseDto> close(@PathParam("id") String id, @Valid CloseTicketRequestDto request) {
         CloseTicketCommand command = new CloseTicketCommand(id, request.rating(), request.comment());
         return closeTicketUseCase.execute(command).map(ticketRestMapper::toResponseDto);
     }
@@ -214,7 +215,7 @@ public class TicketResource {
     @PATCH
     @Path("/{id}/cancel")
     @RolesAllowed({Roles.SOPORTE_TI, Roles.ADMIN})
-    public Uni<TicketResponseDto> cancel(@PathParam("id") String id, CancelTicketRequestDto request) {
+    public Uni<TicketResponseDto> cancel(@PathParam("id") String id, @Valid CancelTicketRequestDto request) {
         CancelTicketCommand command = new CancelTicketCommand(id, request.reason());
         return cancelTicketUseCase.execute(command).map(ticketRestMapper::toResponseDto);
     }
