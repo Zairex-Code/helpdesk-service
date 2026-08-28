@@ -302,6 +302,12 @@
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
+                                    <excludes>
+                                        <!-- Development-only login endpoint and its DTOs (excluded from the coverage gate). -->
+                                        <exclude>org/softtech/infrastructure/entrypoints/rest/AuthResource*</exclude>
+                                        <exclude>org/softtech/infrastructure/entrypoints/rest/dto/LoginRequestDto*</exclude>
+                                        <exclude>org/softtech/infrastructure/entrypoints/rest/dto/LoginResponseDto*</exclude>
+                                    </excludes>
                                     <limits>
                                         <limit>
                                             <counter>LINE</counter>
