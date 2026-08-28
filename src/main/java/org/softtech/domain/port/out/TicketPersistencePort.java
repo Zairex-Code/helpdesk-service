@@ -29,7 +29,7 @@ public interface TicketPersistencePort {
      * @return a Uni emitting the persisted Ticket upon successful database insertion.
      * @throws NullPointerException if ticket is null.
      */
-    Uni<Ticket> persist(Ticket ticket);
+    Uni<Ticket> save(Ticket ticket);
 
 
     /**

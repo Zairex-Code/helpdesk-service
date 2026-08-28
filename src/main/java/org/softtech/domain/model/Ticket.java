@@ -146,7 +146,7 @@ public final class Ticket {
         return this.toBuilder()
                 .assignedAgentId(agentId.trim())
                 .status(TicketStatus.ASSIGNED)
-                .firstResponseAt(firstResponseAt)
+                .firstResponseAt(firstResponse)
                 .updatedAt(assignedAt)
                 .notes(Collections.unmodifiableList(updatedNotes))
                 .build();
@@ -261,7 +261,6 @@ public final class Ticket {
 
         return this.toBuilder()
                 .status(TicketStatus.CANCELLED)
-                .updatedAt(closedAt)
                 .updatedAt(cancelledAt)
                 .notes(Collections.unmodifiableList(updatedNotes))
                 .build();

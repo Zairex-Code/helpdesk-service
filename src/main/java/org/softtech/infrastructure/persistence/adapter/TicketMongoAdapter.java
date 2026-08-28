@@ -49,7 +49,7 @@ public class TicketMongoAdapter implements TicketPersistencePort {
      * @throws NullPointerException if {@code ticket} is {@code null}.
      */
     @Override
-    public Uni<Ticket> persist(Ticket ticket) {
+    public Uni<Ticket> save(Ticket ticket) {
         Objects.requireNonNull(ticket, "Ticket aggregate must not be null for persistence");
 
         TicketDocument document = persistenceMapper.toDocument(ticket);

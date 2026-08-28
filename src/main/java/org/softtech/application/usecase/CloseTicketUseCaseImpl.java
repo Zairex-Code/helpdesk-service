@@ -14,7 +14,6 @@ import org.softtech.domain.port.out.TicketCachePort;
 import org.softtech.domain.port.out.TicketEventPublisherPort;
 import org.softtech.domain.port.out.TicketPersistencePort;
 
-import javax.swing.plaf.metal.OceanTheme;
 import java.time.Instant;
 import java.util.Objects;
 

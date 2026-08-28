@@ -57,10 +57,10 @@ public class TicketDocument {
     @BsonProperty("assigned_agent_id")
     private String assignedAgentId;
 
-    @BsonProperty("assigned_agent_id")
+    @BsonProperty("vip_customer")
     private boolean vipCustomer;
 
-    @BsonProperty("vip_customer")
+    @BsonProperty("sla_policy")
     private SlaPolicyDocument slaPolicy;
 
     @BsonProperty("feedback")

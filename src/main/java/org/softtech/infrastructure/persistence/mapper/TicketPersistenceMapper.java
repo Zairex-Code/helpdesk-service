@@ -59,8 +59,6 @@ public class TicketPersistenceMapper {
                 .createdAt(domain.getCreatedAt())
                 .updatedAt(domain.getUpdatedAt())
                 .firstResponseAt(domain.getFirstResponseAt())
-                .resolveAt(domain.getUpdatedAt())
-                .firstResponseAt(domain.getFirstResponseAt())
                 .resolveAt(domain.getResolvedAt())
                 .closedAt(domain.getClosedAt())
                 .build();

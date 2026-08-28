@@ -75,7 +75,7 @@ public class CreateTicketUseCaseImpl implements CreateTicketUseCase {
 
         log.info("Initiating ticket creation pipeline for ticketNumber {} and requesterId {}", ticketNumber, command.requesterId());
 
-        return ticketPersistencePort.persist(newTicket)
+        return ticketPersistencePort.save(newTicket)
                 .call(persistTicket -> warmUpCache(persistTicket))
                 .call(persistedTicket -> publishCreationEvent(persistedTicket, now))
                 .invoke(persistedTicket -> log.info(

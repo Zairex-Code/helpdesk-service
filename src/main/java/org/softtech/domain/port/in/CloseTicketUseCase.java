@@ -53,7 +53,7 @@ public interface CloseTicketUseCase {
             if (rating != null && (rating < Feedback.MIN_RATING || rating > Feedback.MAX_RATING)){
                 throw new IllegalArgumentException(
                         String.format("Feedback rating must be between %d and %d. Provided: %d",
-                                Feedback.MIN_RATING, Feedback.MIN_RATING, rating)
+                                Feedback.MIN_RATING, Feedback.MAX_RATING, rating)
                 );
             }
         }
